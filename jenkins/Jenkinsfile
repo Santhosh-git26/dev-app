@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        APP_NAME = "devops-app"
+    }
+
     stages {
 
         stage('Clone Code') {
@@ -11,15 +15,25 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t devops-app .'
+                sh 'docker build -t $APP_NAME .'
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                sh '''
+                docker rm -f devops-container || true
+                '''
             }
         }
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 3000:3000 devops-app'
+                sh '''
+                docker run -d -p 3000:3000 --name devops-container $APP_NAME
+                '''
             }
         }
 
     }
-} 
+}
